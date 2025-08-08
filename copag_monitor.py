@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 LOGIN_URL = "https://www.b2b.copagloja.com.br/login"
-POKEMON_URL = "https://www.b2b.copagloja.com.br/pokemon"
+POKEMON_URL = "https://www.b2b.copagloja.com.br/pokemon/escarlate-e-violeta-10-5"
 
 
 payload = {"usuario": os.getenv("USUARIO"), "senha": os.getenv("SENHA")}
@@ -74,7 +74,7 @@ def check_products():
             #     '//article[.//span[text()="Comprar"] and contains(.//span[@class="vtex-product-summary-2-x-brandName"], "Charizard")]',
             # )
 
-            if len(products) > 1:
+            if len(products) > 0:
 
                 for product in products:
                     name = product.find_element(
