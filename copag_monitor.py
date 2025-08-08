@@ -90,6 +90,7 @@ def check_products():
 
         except Exception as e:
             print(f"An error occurred: {e}")
+            send_telegram_message(f"An error occurred: {e}")
 
         time.sleep(60)
 
@@ -97,6 +98,7 @@ def check_products():
 try:
     login()
     time.sleep(5)
+    send_telegram_message("Login successful. Starting product monitoring...")
     check_products()
 finally:
     driver.quit()
