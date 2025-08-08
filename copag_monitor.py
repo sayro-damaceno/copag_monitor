@@ -69,7 +69,12 @@ def check_products():
                 By.XPATH, '//article[.//span[text()="Comprar"]]'
             )
 
-            if len(products) > 0:
+            # products_by_name = driver.find_elements(
+            #     By.XPATH,
+            #     '//article[.//span[text()="Comprar"] and contains(.//span[@class="vtex-product-summary-2-x-brandName"], "Charizard")]',
+            # )
+
+            if len(products) > 1:
 
                 for product in products:
                     name = product.find_element(
@@ -86,7 +91,7 @@ def check_products():
         except Exception as e:
             print(f"An error occurred: {e}")
 
-        time.sleep(10)
+        time.sleep(60)
 
 
 try:
