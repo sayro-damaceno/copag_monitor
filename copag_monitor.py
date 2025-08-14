@@ -2,7 +2,6 @@ import os
 import time
 import requests
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -12,7 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 LOGIN_URL = "https://www.b2b.copagloja.com.br/login"
-POKEMON_URL = "https://www.b2b.copagloja.com.br/pokemon/escarlate-e-violeta-10-5"
+# POKEMON_URL = "https://www.b2b.copagloja.com.br/pokemon/escarlate-e-violeta-10-5"
+POKEMON_URL = "https://www.b2b.copagloja.com.br/pokemon"
 
 
 payload = {"usuario": os.getenv("USUARIO"), "senha": os.getenv("SENHA")}
@@ -20,9 +20,25 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 
-def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    data = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+def send_telegram_message(message, image_url=None):
+    base_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+    if image_url:
+        url = f"{base_url}/sendPhoto"
+        with open(image_url, "rb") as img:
+            files = {"photo": img}
+            data = {
+                "chat_id": TELEGRAM_CHAT_ID,
+                "caption": message,
+                "parse_mode": "HTML",
+            }
+            try:
+                requests.post(url, data=data, files=files)
+            except Exception as e:
+                print(f"Erro ao enviar imagem no Telegram: {e}")
+    else:
+        url = f"{base_url}/sendMessage"
+        data = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"}
+
     try:
         requests.post(url, data=data)
     except Exception as e:
@@ -61,18 +77,20 @@ def check_products():
     while True:
         driver.get(POKEMON_URL)
         try:
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, '//span[text()="Comprar"]'))
-            )
+            time.sleep(3)
 
-            products = driver.find_elements(
-                By.XPATH, '//article[.//span[text()="Comprar"]]'
-            )
+            # products = driver.find_elements(
+            #     By.XPATH, '//article[.//span[text()="Comprar"]]'
+            # )
 
             # products_by_name = driver.find_elements(
-            #     By.XPATH,
-            #     '//article[.//span[text()="Comprar"] and contains(.//span[@class="vtex-product-summary-2-x-brandName"], "Charizard")]',
+            #     By.XPATH, '//article[.//span[text()="Comprar"] and contains(.//span[@class="vtex-product-summary-2-x-brandName"], "Charizard")]',
             # )
+
+            products = driver.find_elements(
+                By.XPATH,
+                '//article[.//span[text()="Comprar"] and not(contains(.//span[@class="vtex-product-summary-2-x-productBrand vtex-product-summary-2-x-brandName t-body"]/text(), "Charizard"))]',
+            )
 
             if len(products) > 0:
 
@@ -98,7 +116,10 @@ def check_products():
 try:
     login()
     time.sleep(5)
-    send_telegram_message("Login successful. Starting product monitoring...")
+    send_telegram_message(
+        "Starting product monitoring...",
+        "assets/gohan.webp",
+    )
     check_products()
 finally:
     driver.quit()
